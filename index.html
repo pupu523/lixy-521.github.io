@@ -88,8 +88,78 @@
             transform: translateY(-2px);
         }
         
+        /* 搜索栏样式 */
+        .search-container {
+            padding: 15px 0;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid rgba(239, 83, 80, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .search-container.hidden {
+            display: none;
+        }
+        
+        .search-box {
+            display: flex;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 30px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(239, 83, 80, 0.15);
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 15px 25px;
+            border: none;
+            font-size: 1rem;
+            color: var(--text-dark);
+            background-color: var(--white);
+            outline: none;
+        }
+        
+        .search-input::placeholder {
+            color: #aaa;
+        }
+        
+        .search-btn {
+            background: linear-gradient(135deg, var(--primary-red), var(--dark-red));
+            color: var(--white);
+            border: none;
+            padding: 0 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .search-btn:hover {
+            background: linear-gradient(135deg, var(--dark-red), var(--primary-red));
+        }
+        
+        .search-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--primary-red);
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .search-toggle:hover {
+            background-color: rgba(239, 83, 80, 0.1);
+        }
+        
         .main-header {
             padding: 25px 0;
+            position: relative;
         }
         
         .logo-section {
@@ -614,6 +684,37 @@
                 margin-top: 10px;
             }
             
+            .search-toggle {
+                display: block;
+                position: absolute;
+                right: 70px;
+                top: 35px;
+            }
+            
+            .search-container {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                z-index: 1001;
+                padding: 20px;
+                background-color: var(--white);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                border-top: 1px solid rgba(239, 83, 80, 0.1);
+            }
+            
+            .search-container.hidden {
+                display: none;
+            }
+            
+            .search-container.show {
+                display: block;
+            }
+            
+            .search-box {
+                max-width: 100%;
+            }
+            
             nav ul {
                 display: none;
                 position: absolute;
@@ -698,6 +799,11 @@
             .school-name h1 {
                 font-size: 1.8rem;
             }
+            
+            .search-toggle {
+                right: 60px;
+                top: 30px;
+            }
         }
     </style>
 </head>
@@ -718,6 +824,18 @@
             </div>
         </div>
         
+        <!-- 搜索栏 -->
+        <div class="search-container hidden" id="searchContainer">
+            <div class="container">
+                <form id="searchForm" class="search-box">
+                    <input type="text" id="searchInput" class="search-input" placeholder="请输入要搜索的内容..." required>
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                </form>
+            </div>
+        </div>
+        
         <div class="main-header">
             <div class="container">
                 <div class="logo-section">
@@ -729,6 +847,11 @@
                         <p>厚德博学 · 追求卓越</p>
                     </div>
                 </div>
+                
+                <!-- 搜索切换按钮（移动端） -->
+                <button class="search-toggle" id="searchToggle">
+                    <i class="fas fa-search"></i>
+                </button>
                 
                 <button class="mobile-menu-btn" id="mobileMenuBtn">
                     <i class="fas fa-bars"></i>
@@ -946,6 +1069,49 @@
                 icon.classList.remove('fa-times');
                 icon.classList.add('fa-bars');
             }
+            
+            // 关闭搜索栏（如果打开）
+            const searchContainer = document.getElementById('searchContainer');
+            searchContainer.classList.remove('show');
+        });
+        
+        // 搜索切换按钮（移动端）
+        document.getElementById('searchToggle').addEventListener('click', function() {
+            const searchContainer = document.getElementById('searchContainer');
+            searchContainer.classList.toggle('show');
+            
+            // 关闭导航菜单（如果打开）
+            const menu = document.getElementById('mainMenu');
+            if (menu.classList.contains('show')) {
+                menu.classList.remove('show');
+                const menuBtnIcon = document.querySelector('#mobileMenuBtn i');
+                menuBtnIcon.classList.remove('fa-times');
+                menuBtnIcon.classList.add('fa-bars');
+            }
+            
+            // 如果显示搜索框，则聚焦
+            if (searchContainer.classList.contains('show')) {
+                setTimeout(() => {
+                    document.getElementById('searchInput').focus();
+                }, 300);
+            }
+        });
+        
+        // 搜索表单提交
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.trim();
+            
+            if (searchTerm) {
+                // 跳转到search.html并传递搜索参数
+                window.location.href = `search.html?q=${encodeURIComponent(searchTerm)}`;
+            } else {
+                // 如果搜索框为空，给予提示
+                searchInput.focus();
+                searchInput.placeholder = "请输入搜索内容...";
+            }
         });
         
         // 点击菜单项后关闭移动菜单
@@ -964,6 +1130,13 @@
         
         // 页面加载完成后
         document.addEventListener('DOMContentLoaded', function() {
+            // 检查URL中是否有搜索参数，如果有则填充到搜索框
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('q');
+            if (searchParam) {
+                document.getElementById('searchInput').value = decodeURIComponent(searchParam);
+            }
+            
             // 更新版权年份
             const yearSpans = document.querySelectorAll('.copyright p');
             if (yearSpans.length > 0) {
@@ -1008,5 +1181,3 @@
     </script>
 </body>
 </html>
-
-
